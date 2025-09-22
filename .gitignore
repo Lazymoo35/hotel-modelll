@@ -1,3 +1,6 @@
 test.ipynb
 data_train.csv
 data_test.csv
+hotel_bookings_cleaned.csv
+hotel_bookings_cleaned.xlsx
+.gitignore
