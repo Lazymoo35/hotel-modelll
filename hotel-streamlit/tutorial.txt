@@ -1,0 +1,9 @@
+DOCUMENTATION
+https://docs.streamlit.io/
+
+SYNTAX
+st.title("Title") --> Header
+st.write("subtext") --> Subtext
+
+CONSOLE COMMAND:
+- streamlit run main.py --> View streamlit app in your browser locally
