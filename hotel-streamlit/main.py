@@ -2,6 +2,161 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 import joblib
+from sklearn.base import BaseEstimator, TransformerMixin
+
+# --- CUSTOM TRANSFORMER
+class ColumnCombiner(BaseEstimator, TransformerMixin):
+    """
+    Combine multiple numeric columns into a single new column.
+    Example: adults + children + babies -> total_guests
+    """
+    def __init__(self, columns=None, new_column_name=None):
+        self.columns = columns or []
+        self.new_column_name = new_column_name
+    
+    def fit(self, X, y=None):
+        return self
+    
+    def transform(self, X):
+        X = X.copy()
+        if all(col in X.columns for col in self.columns):
+            X[self.new_column_name] = X[self.columns].fillna(0).sum(axis=1)
+            X.drop(self.columns, axis=1, inplace=True, errors="ignore")
+        return X
+    
+    def get_feature_names_out(self):
+        return [self.new_column_name]
+    
+class ColumnDropper(BaseEstimator, TransformerMixin):
+    """
+    Drop specified columns if they exist in the DataFrame.
+    """
+    def __init__(self, columns=None):
+        self.columns = columns or []
+    
+    def fit(self, X, y=None):
+        return self
+    
+    def transform(self, X):
+        X = X.copy()
+        return X.drop(columns=[c for c in self.columns if c in X.columns], errors="ignore")
+    
+class MultiColumnCombiner(BaseEstimator, TransformerMixin):
+    """
+    Combine multiple sets of columns into new features at once.
+    Example:
+    combiner = MultiColumnCombiner(
+        combinations={
+            "total_guests": ["adults", "children", "babies"],
+            "total_stay_nights": ["stays_in_weekend_nights", "stays_in_week_nights"]
+        }
+    )
+    """
+    def __init__(self, combinations=None):
+        self.combinations = combinations or {}
+    
+    def fit(self, X, y=None):
+        return self
+    
+    def transform(self, X):
+        X = X.copy()
+        for new_col, cols in self.combinations.items():
+            if all(c in X.columns for c in cols):
+                X[new_col] = X[cols].fillna(0).sum(axis=1)
+                X.drop(cols, axis=1, inplace=True, errors="ignore")
+        return X
+    
+    def get_feature_names_out(self):
+        return list(self.combinations.keys())
+
+class OutlierClipper(BaseEstimator, TransformerMixin):
+    def __init__(self, columns, whisker=1.5):
+        self.columns = columns
+        self.whisker = whisker
+        self.bounds_ = {}
+
+    def fit(self, X, y=None):
+        X = X.copy()
+        for col in self.columns:
+            if col in X.columns:
+                s = pd.to_numeric(X[col], errors="coerce").dropna()
+                if len(s) > 0:
+                    q1, q3 = s.quantile(0.25), s.quantile(0.75)
+                    iqr = q3 - q1
+                    self.bounds_[col] = (q1 - self.whisker*iqr, q3 + self.whisker*iqr)
+        return self
+
+    def transform(self, X):
+        X = X.copy()
+        for col, (lb, ub) in self.bounds_.items():
+            X[col] = pd.to_numeric(X[col], errors="coerce")
+            X[col] = X[col].clip(lower=lb, upper=ub).fillna(X[col].median())
+        return X
+
+    def get_feature_names_out(self, input_features=None):
+        return input_features if input_features is not None else self.columns
+
+class ADRScaler(BaseEstimator, TransformerMixin):
+    """Scale adr column using RobustScaler"""
+    def __init__(self, column="adr"):
+        self.column = column
+        self.scaler = RobustScaler()
+        self.fitted_ = False
+    
+    def fit(self, X, y=None):
+        if self.column in X.columns:
+            self.scaler.fit(X[[self.column]])
+            self.fitted_ = True
+        return self
+    
+    def transform(self, X):
+        X = X.copy()
+        if self.fitted_ and self.column in X.columns:
+            X[self.column] = self.scaler.transform(X[[self.column]])
+        return X
+    
+    def get_feature_names_out(self, input_features=None):
+        return input_features if input_features is not None else self.columns
+
+class RareLabelEncoder(BaseEstimator, TransformerMixin):
+    def __init__(self, tol=0.01, n_categories=1, replace_with="Other"):
+        self.tol = tol
+        self.n_categories = n_categories
+        self.replace_with = replace_with
+
+    def fit(self, X, y=None):
+        # pastikan DataFrame
+        if isinstance(X, np.ndarray):
+            X = pd.DataFrame(X)
+
+        self.columns_ = X.columns
+        self.rare_categories_ = {}
+        for col in X.columns:
+            freqs = X[col].value_counts(normalize=True)
+            rare_cats = freqs[freqs < self.tol].index
+            if len(freqs) - len(rare_cats) < self.n_categories:
+                rare_cats = freqs.sort_values().index[self.n_categories:]
+            self.rare_categories_[col] = set(rare_cats)
+        return self
+
+    def transform(self, X):
+        # pastikan DataFrame
+        array_input = False
+        if isinstance(X, np.ndarray):
+            X = pd.DataFrame(X, columns=self.columns_)
+            array_input = True
+
+        X_copy = X.copy()
+        for col, rare_cats in self.rare_categories_.items():
+            X_copy[col] = X_copy[col].where(~X_copy[col].isin(rare_cats), self.replace_with)
+
+        return X_copy.values if array_input else X_copy
+
+    def get_feature_names_out(self, input_features=None):
+        return input_features if input_features is not None else self.columns_
+# --- CUSTOM TRANSFORMER
+
+
 
 # NOTE FOR NEXT PROGRESS: Real trial ended before load model (2:20:00), if error try after that step!
 
@@ -9,10 +164,10 @@ import joblib
 st.set_page_config(page_title="Hotel Booking Cancellation Prediction", layout="centered", page_icon="🏨")
 
 # Load model
-# model = PLACEHOLDER_FOR_MODEL_LOADING_CODE  # JANLUP GANTII!
+model = joblib.load("XGBoost_Tuned.joblib")
 
 # Get prediction
-def predict(data:pd.DataFrame, model):
+def predict(data:pd.DataFrame, models):
     """Get prediction from model
     
     Args:
@@ -21,7 +176,7 @@ def predict(data:pd.DataFrame, model):
     """
     prediction = model.predict(data)
     predict_proba = model.predict_proba(data)
-    prediction_label = prediction.map({0: "Won't Cancel", 1: "Will Cancel"})
+    prediction_label = pd.Series(prediction).map({0: "Won't Cancel", 1: "Will Cancel"})
     return {
         "prediction": prediction,
         "proba": predict_proba,
@@ -48,7 +203,6 @@ with col1:
     adults = st.number_input("Number of Adults", min_value=0, max_value=30, value=0)
     children = st.number_input("Number of Children", min_value=0, max_value=30, value=0)
     babies = st.number_input("Number of Babies", min_value=0, max_value=30, value=0)
-    
 
 with col2:
     previous_cancellations = st.number_input("Previous Cancellations", min_value=0, max_value=100, value=0)
@@ -85,9 +239,4 @@ if predict_button:
 
     # PRedict
     result = predict(df, model)
-    st.write(f"Guest with this booking {label}, with the probability being {proba}.")
-
-
-
-
-    # f"Guest with this booking {prediction}, with the probability being {predict_proba}."
+    st.write(f"Guest with this booking {result['label'].iloc[0]}, with the probability being {result['proba'][0].max():.2f}.")
