@@ -56,6 +56,8 @@ We created an interactive Tableau dashboard to visualize the cancellation patter
 
 [Hotel Cancellation Dashboard (Tableau)](https://public.tableau.com/app/profile/ridwan.darmawan/viz/HotelCancellation_17585921650630/HotelCancelation?publish=yes)  
 
+![Tableau Visualization](images/tableau-screenshot.png)
+
 ---
 
 ## Streamlit App
@@ -63,7 +65,7 @@ We also provide a deployment of the ML model in Streamlit, allowing stakeholders
 
 [Hotel Prediction App (Streamlit)](https://lazymoo35-hotel-modelll-main-qocaxv.streamlit.app/)  
 
-![Tableau Visualization](images/tableau-screenshot.png)
+![Streamlit Visualization](images/streamlit-screenshot.png)
 
 ---
 
