@@ -2,6 +2,7 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 import joblib
+import os
 from sklearn.base import BaseEstimator, TransformerMixin
 
 
@@ -162,7 +163,9 @@ class RareLabelEncoder(BaseEstimator, TransformerMixin):
 # START OF APP
 
 # Load model
-model = joblib.load("Hotel_Cancellation.joblib")
+MODEL_FILE = "Hotel_Cancellation.joblib"
+MODEL_PATH = os.path.join(os.path.dirname(__file__), "Hotel_Cancellation.joblib")
+model = joblib.load(MODEL_PATH)
 
 # Get prediction
 def predict(data:pd.DataFrame, models):
