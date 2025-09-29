@@ -10,7 +10,7 @@
 Hotel booking cancellations can significantly affect revenue management. In this project, we aim to **predict the likelihood of a hotel booking being canceled** and provide actionable recommendations for hotel managers.
 
 - **Cancellation Rate (X):** 37.04%  
-- **Estimated Revenue Loss (Y):** ≈ 16.7 million (≈39.15% of potential revenue)  
+- **Estimated Revenue Loss (Y):** ≈ €16.7 million (≈39.15% of potential revenue)  
 
 > This high cancellation rate highlights the need for a predictive model, so hotels can apply preventive strategies such as **overbooking**, **deposit policies**, and **targeted customer segmentation**.
 
@@ -27,7 +27,7 @@ Hotel booking cancellations can significantly affect revenue management. In this
 ## Project Structure
 1. **Problem Statement & Data Understanding**  
    - Define cancellation problem & stakeholders  
-   - Dataset: Hotel Bookings Dataset (2015–2017, Europe)  
+   - Dataset: Hotel Bookings Dataset (2015–2017, Portugal)  
 
 2. **Exploratory Data Analysis (EDA)**  
    - Distribution of cancellations by time, market segment, deposit type, ADR, etc.  
