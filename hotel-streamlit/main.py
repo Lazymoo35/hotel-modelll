@@ -164,7 +164,7 @@ class RareLabelEncoder(BaseEstimator, TransformerMixin):
 st.set_page_config(page_title="Hotel Booking Cancellation Prediction", layout="centered", page_icon="🏨")
 
 # Load model
-model = joblib.load("XGBoost_Tuned.joblib")
+model = joblib.load("Hotel_Cancellation_xgb700_9_0.05.joblib")
 
 # Get prediction
 def predict(data:pd.DataFrame, models):
