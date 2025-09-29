@@ -61,7 +61,9 @@ We created an interactive Tableau dashboard to visualize the cancellation patter
 ## Streamlit App
 We also provide a deployment of the ML model in Streamlit, allowing stakeholders to input booking details and get cancellation predictions.  
 
-**[Streamlit App – Coming Soon]**  
+[Hotel Prediction App (Streamlit)](https://lazymoo35-hotel-modelll-main-qocaxv.streamlit.app/)  
+
+![Tableau Visualization](images/tableau-screenshot.png)
 
 ---
 
@@ -77,8 +79,14 @@ We also provide a deployment of the ML model in Streamlit, allowing stakeholders
 
 ## Repository Structure
 ```
+├── hotel_tableau                # Tableau working dir
+   ├── Hotel Cancellation.twbx   # Tableau file
 ├── Hotel_Cancellation.ipynb     # Main notebook
+├── Hotel_Cancellation.joblib    # Model file
 ├── hotel_bookings.csv           # Dataset
+├── main.py                      # Streamlit main script
+├── requirements.txt             # Requirements for streamlit's modules
+├── requirements-notebook.txt    # Requirements for notebook's modules
 ├── README.md                    # Project documentation
 ```
 
