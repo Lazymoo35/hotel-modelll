@@ -161,9 +161,6 @@ class RareLabelEncoder(BaseEstimator, TransformerMixin):
 
 # START OF APP
 
-# Page Config
-st.set_page_config(page_title="Hotel Booking Cancellation Prediction", layout="centered", page_icon="🏨")
-
 # Load model
 model = joblib.load("Hotel_Cancellation.joblib")
 
@@ -181,78 +178,109 @@ def predict(data:pd.DataFrame, models):
     return {
         "prediction": prediction,
         "proba": predict_proba,
-        "label": prediction_label
-    }
+        "label": prediction_label}
+
+# Page Config
+st.set_page_config(page_title="Hotel Booking Cancellation Prediction", layout="centered", page_icon="🏨")
 
 # Page texts
 st.title("Hotel Booking Cancellation Prediction")
 st.write("This app predicts whether a hotel booking will be cancelled based on user inputs.")
 st.subheader("User Input Parameters")
 
-tab1, tab2 = st.tabs(["Input and Prediction", "Projected Cost"])
+tab1, tab2 = st.tabs(["Manual Input", "Batch Input (CSV)"])
 
-# Header options
-hotel_type = st.radio("Hotel Type", ["City Hotel", "Resort Hotel"])
-country = st.text_input("Country (ISO Code)")
+with tab1:
 
-# Creating the columns
-col1, col2, col3 = st.columns(3, gap="medium", border=True)
+    # Header options
+    hotel_type = st.radio("Hotel Type", ["City Hotel", "Resort Hotel"])
+    country = st.text_input("Country (ISO Code)")
 
-with col1:
-    lead_time = st.number_input("Lead Time (days)", min_value=0, max_value=730, value=0)
-    arrival_date_month = st.selectbox("Arrival Month", 
-        ["January", "February", "March", "April", "May", "June", 
-         "July", "August", "September", "October", "November", "December"])
-    arrival_date_day_of_month = st.slider("Arrival Day of Month", min_value=1, max_value=31, value=1)  
-    
-with col2:
-    days_in_waiting_list = st.number_input("Days in Waiting List", min_value=0, max_value=365, value=0)
-    stays_in_weekend_nights = st.number_input("Weekend Nights", min_value=0, max_value=30, value=0)
-    stays_in_week_nights = st.number_input("Week Nights", min_value=0, max_value=30, value=0)
-    
-with col3:
-    adults = st.number_input("Number of Adults", min_value=0, max_value=30, value=0)
-    children = st.number_input("Number of Children", min_value=0, max_value=30, value=0)
-    babies = st.number_input("Number of Babies", min_value=0, max_value=30, value=0)
-    
-    
-first_expander_trigger = (stays_in_weekend_nights + stays_in_week_nights) > 0
+    # Creating the columns
+    col1, col2, col3 = st.columns(3, gap="medium", border=True)
 
-with st.expander("FInancial Info", expanded=first_expander_trigger):
-    adr = st.number_input("Average Daily Rate", min_value=0, max_value=1000, value=0)
-    deposit_type = st.selectbox("Deposit Type", ["No Deposit", "Refundable", "Non Refund"])
-    market_segment = st.selectbox("Market Segment", ["Direct", "Online TA", "Offline TA/TO", "Complementary", "Groups", "Online TA/TO", "Corporate", "Aviation", "Undefined"])
-    distribution_channel = st.selectbox("Distribution Channel", ["Direct", "Corporate", "TA/TO", "GDS", "Undefined"])
-    customer_type = st.selectbox("Customer Type", ["Transient", "Contract", "Group", "Transient-Party"])
+    with col1:
+        lead_time = st.number_input("Lead Time (days)", min_value=0, max_value=730, value=0)
+        arrival_date_month = st.selectbox("Arrival Month", 
+            ["January", "February", "March", "April", "May", "June", 
+            "July", "August", "September", "October", "November", "December"])
+        arrival_date_day_of_month = st.slider("Arrival Day of Month", min_value=1, max_value=31, value=1)  
+        
+    with col2:
+        days_in_waiting_list = st.number_input("Days in Waiting List", min_value=0, max_value=365, value=0)
+        stays_in_weekend_nights = st.number_input("Weekend Nights", min_value=0, max_value=30, value=0)
+        stays_in_week_nights = st.number_input("Week Nights", min_value=0, max_value=30, value=0)
+        
+    with col3:
+        adults = st.number_input("Number of Adults", min_value=0, max_value=30, value=0)
+        children = st.number_input("Number of Children", min_value=0, max_value=30, value=0)
+        babies = st.number_input("Number of Babies", min_value=0, max_value=30, value=0)
+        
+        
+    first_expander_trigger = (stays_in_weekend_nights + stays_in_week_nights) > 0
 
-second_expander_trigger = adr != 0
+    with st.expander("FInancial Info", expanded=first_expander_trigger):
+        adr = st.number_input("Average Daily Rate", min_value=0, max_value=1000, value=0)
+        deposit_type = st.selectbox("Deposit Type", ["No Deposit", "Refundable", "Non Refund"])
+        market_segment = st.selectbox("Market Segment", ["Direct", "Online TA", "Offline TA/TO", "Complementary", "Groups", "Online TA/TO", "Corporate", "Aviation", "Undefined"])
+        distribution_channel = st.selectbox("Distribution Channel", ["Direct", "Corporate", "TA/TO", "GDS", "Undefined"])
+        customer_type = st.selectbox("Customer Type", ["Transient", "Contract", "Group", "Transient-Party"])
 
-with st.expander("Guests' Request", expanded=second_expander_trigger):
-    reserved_room_type = st.selectbox("Reserved Room Type", list("ABCDEFGHIJKL"))
-    meal = st.selectbox("Meal Plan", ["BB", "FB", "HB", "SC", "Undefined"])
-    required_car_parking_spaces = st.slider("Required Car Parking Spaces", min_value=0, max_value=10, value=0)
-    total_of_special_requests = st.slider("Total of Special Requests", min_value=0, max_value=10, value=0)
-    booking_changes = st.slider("Booking Changes", min_value=0, max_value=20, value=0)
+    second_expander_trigger = adr != 0
 
-is_repeated_guest = st.checkbox("Is Repeated Guest")
-with st.expander("Only fill if repeated guest!", expanded=is_repeated_guest):
-    previous_cancellations = st.number_input("Previous Cancellations", min_value=0, max_value=100, value=0)
-    previous_bookings_not_canceled = st.number_input("Previous Bookings Not Canceled", min_value=0, max_value=100, value=0)
+    with st.expander("Guests' Request", expanded=second_expander_trigger):
+        reserved_room_type = st.selectbox("Reserved Room Type", list("ABCDEFGHIJKL"))
+        meal = st.selectbox("Meal Plan", ["BB", "FB", "HB", "SC", "Undefined"])
+        required_car_parking_spaces = st.slider("Required Car Parking Spaces", min_value=0, max_value=10, value=0)
+        total_of_special_requests = st.slider("Total of Special Requests", min_value=0, max_value=10, value=0)
+        booking_changes = st.slider("Booking Changes", min_value=0, max_value=20, value=0)
+
+    is_repeated_guest = st.checkbox("Is Repeated Guest")
+    with st.expander("Only fill if repeated guest!", expanded=is_repeated_guest):
+        previous_cancellations = st.number_input("Previous Cancellations", min_value=0, max_value=100, value=0)
+        previous_bookings_not_canceled = st.number_input("Previous Bookings Not Canceled", min_value=0, max_value=100, value=0)
 
 
-# Predict Button
-predict_button = st.button("Predict Cancellation", use_container_width=True)
-if predict_button:
-    df = pd.DataFrame(
-        np.array([[hotel_type, lead_time, arrival_date_month, arrival_date_day_of_month, stays_in_weekend_nights, stays_in_week_nights, adults, children, babies,
-                   previous_cancellations, previous_bookings_not_canceled, booking_changes, days_in_waiting_list, adr, required_car_parking_spaces, total_of_special_requests,
-                   is_repeated_guest, country, market_segment, distribution_channel, deposit_type, reserved_room_type, customer_type, meal]]),
-        columns=["hotel", "lead_time", "arrival_date_month", "arrival_date_day_of_month", "stays_in_weekend_nights", "stays_in_week_nights", "adults", "children", "babies",
-                 "previous_cancellations", "previous_bookings_not_canceled", "booking_changes", "days_in_waiting_list", "adr", "required_car_parking_spaces", "total_of_special_requests",
-                 "is_repeated_guest", "country", "market_segment", "distribution_channel", "deposit_type", "reserved_room_type", "customer_type", "meal"]
-    )
-    st.write(df)
+    # Predict Button
+    predict_button = st.button("Predict Cancellation", use_container_width=True)
+    if predict_button:
+        df = pd.DataFrame(
+            np.array([[hotel_type, lead_time, arrival_date_month, arrival_date_day_of_month, stays_in_weekend_nights, stays_in_week_nights, adults, children, babies,
+                    previous_cancellations, previous_bookings_not_canceled, booking_changes, days_in_waiting_list, adr, required_car_parking_spaces, total_of_special_requests,
+                    is_repeated_guest, country, market_segment, distribution_channel, deposit_type, reserved_room_type, customer_type, meal]]),
+            columns=["hotel", "lead_time", "arrival_date_month", "arrival_date_day_of_month", "stays_in_weekend_nights", "stays_in_week_nights", "adults", "children", "babies",
+                    "previous_cancellations", "previous_bookings_not_canceled", "booking_changes", "days_in_waiting_list", "adr", "required_car_parking_spaces", "total_of_special_requests",
+                    "is_repeated_guest", "country", "market_segment", "distribution_channel", "deposit_type", "reserved_room_type", "customer_type", "meal"]
+        )
+        st.write(df)
 
-    # PRedict
-    result = predict(df, model)
-    st.write(f"Guest with this booking **{result['label'].iloc[0]}**, with the probability being **{result['proba'][0].max():.2f}**.")
+        # PRedict
+        result = predict(df, model)
+        st.write(f"Guest with this booking **{result['label'].iloc[0]}**, with the probability being **{result['proba'][0].max():.2f}**.")
+
+with tab2:
+    uploaded_file = st.file_uploader("Upload a CSV file", type=["csv"])
+    if uploaded_file is not None:
+        data = pd.read_csv(uploaded_file)
+        st.write("Preview of uploaded data:")
+        st.dataframe(data.head())
+
+        result = predict(data, model)
+
+        # Add predictions to DataFrame
+        data["prediction"] = result["label"]
+        if result["proba"] is not None:
+            data["cancellation_prob"] = result["proba"][:, 1]
+
+        st.write("Predictions:")
+        st.dataframe(data)
+
+        # Option to download
+        csv = data.to_csv(index=False).encode("utf-8")
+        st.download_button(
+            "Download predictions as CSV",
+            csv,
+            "predictions.csv",
+            "text/csv",
+            key="download-csv"
+        )
