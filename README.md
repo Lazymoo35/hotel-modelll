@@ -82,9 +82,4 @@ We also provide a deployment of the ML model in Streamlit, allowing stakeholders
 ├── README.md                    # Project documentation
 ```
 
----
-
-## References
-- Purwadhika Data Science Final Project Guidelines  
-- Antonio, Almeida & Nunes (2019). *Hotel Booking Demand Datasets*.  
-- Deloitte (2019), LinkedIn (2018) – Industry benchmarks on cancellation and churn rates.  
+ 
