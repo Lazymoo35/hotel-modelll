@@ -6,3 +6,4 @@ hotel_bookings_cleaned.xlsx
 .gitignore
 model_sections - Copy.ipynb
 data.csv
+data_unseen_with_pred.csv
